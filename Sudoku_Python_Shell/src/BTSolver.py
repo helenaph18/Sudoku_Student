@@ -59,6 +59,7 @@ class BTSolver:
         for assign in assignedVars:
             for neighbor in self.network.getNeighborsOfVariable(assign):
                 if neighbor.isChangeable and not neighbor.isAssigned() and neighbor.getDomain().contains(assign.getAssignment()):
+                    self.trail.push(neighbor)
                     neighbor.removeValueFromDomain(assign.getAssignment())
                     modified[neighbor] = neighbor.getDomain()
 

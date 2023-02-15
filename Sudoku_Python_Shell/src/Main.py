@@ -51,10 +51,20 @@ def main ( ):
     trail = Trail.Trail();
 
     if file == "":
-        sudokudata = SudokuBoard.SudokuBoard( 3, 3, 7 )
+        board = [[0, 0, 0, 0, 0, 0, 0, 0, 0], 
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 1, 2, 0, 0, 0, 5],
+                    [0, 0, 0, 0, 7, 1, 0, 0, 0],
+                    [0, 0, 0, 3, 0, 0, 0, 0, 2],
+                    [0, 0, 0, 0, 0, 0, 3, 0, 0],
+                    [5, 0, 2, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0]]
+        sudokudata = SudokuBoard.SudokuBoard( 3, 3, 7, board=board)
         print(sudokudata)
 
         solver = BTSolver.BTSolver( sudokudata, trail, val_sh, var_sh, cc )
+        #solver = BTSolver.BTSolver( sudokudata, trail, val_sh, var_sh, "forwardChecking")
         if cc in ["forwardChecking","norvigCheck","tournCC"]:
             solver.checkConsistency()
         solver.solve()
@@ -83,6 +93,7 @@ def main ( ):
             print ( "Running board: " + str(f) )
             sudokudata = SudokuBoard.SudokuBoard( filepath=os.path.join( file, f ) )
 
+            #solver = BTSolver.BTSolver( sudokudata, trail, val_sh, var_sh, "forwardChecking")
             solver = BTSolver.BTSolver( sudokudata, trail, val_sh, var_sh, cc )
             if cc in ["forwardChecking","norvigCheck","tournCC"]:
                 solver.checkConsistency()
@@ -101,6 +112,7 @@ def main ( ):
     print(sudokudata)
 
     solver = BTSolver.BTSolver( sudokudata, trail, val_sh, var_sh, cc )
+    #solver = BTSolver.BTSolver( sudokudata, trail, val_sh, var_sh, "forwardChecking")
     if cc in ["forwardChecking","norvigCheck","tournCC"]:
         solver.checkConsistency()
     solver.solve()
