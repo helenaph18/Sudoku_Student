@@ -51,7 +51,7 @@ def main ( ):
     trail = Trail.Trail();
 
     if file == "":
-        board = [[0, 0, 0, 0, 0, 0, 0, 0, 0], 
+        """ board = [[0, 0, 0, 0, 0, 0, 0, 0, 0], 
                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
                     [0, 0, 0, 1, 2, 0, 0, 0, 5],
                     [0, 0, 0, 0, 7, 1, 0, 0, 0],
@@ -59,8 +59,9 @@ def main ( ):
                     [0, 0, 0, 0, 0, 0, 3, 0, 0],
                     [5, 0, 2, 0, 0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0]]
-        sudokudata = SudokuBoard.SudokuBoard( 3, 3, 7, board=board)
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0]] """
+        # sudokudata = SudokuBoard.SudokuBoard( 3, 3, 7, board=board)
+        sudokudata = SudokuBoard.SudokuBoard( 3, 3, 7)
         print(sudokudata)
 
         solver = BTSolver.BTSolver( sudokudata, trail, val_sh, var_sh, cc )
