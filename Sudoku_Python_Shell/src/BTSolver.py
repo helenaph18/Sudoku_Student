@@ -49,7 +49,7 @@ class BTSolver:
     """
     def forwardChecking ( self ):
         modified = {}
-
+        
         assignedVars = []
         for c in self.network.constraints:
             for v in c.vars:
@@ -233,10 +233,6 @@ class BTSolver:
         for domain in v.getDomain().values:
             domain_count = 0
             for neighbor in self.network.getNeighborsOfVariable(v):
-                # for neighbor_domain in neighbor.getDomain().values:
-                #     if neighbor_domain == domain:
-                #         domain_count += 1
-
                 if neighbor.getDomain().contains(domain):
                     domain_count += 1
 
