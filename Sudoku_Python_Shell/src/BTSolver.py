@@ -56,12 +56,35 @@ class BTSolver:
                 if v.isAssigned():
                     assignedVars.append(v)
 
+        # while len(assignedVars) != 0:
+        #     av = assignedVars.pop(0)
+        #     for neighbor in self.network.getNeighborsOfVariable(av):
+        #         if neighbor.isChangeable and not neighbor.isAssigned() and neighbor.getDomain().contains(av.getAssignment()):
+        #             self.trail.push(neighbor)
+        #             neighbor.removeValueFromDomain(av.getAssignment())
+        #             modified[neighbor] = neighbor.getDomain()
+
+        #             if neighbor.domain.size() == 1:
+        #                 neighbor.assignValue(neighbor.domain.values[0])
+        #                 assignedVars.append(neighbor)
+
         for assign in assignedVars:
             for neighbor in self.network.getNeighborsOfVariable(assign):
                 if neighbor.isChangeable and not neighbor.isAssigned() and neighbor.getDomain().contains(assign.getAssignment()):
-                    self.trail.push(neighbor)
+
+                    self.trail.push(neighbor)  
                     neighbor.removeValueFromDomain(assign.getAssignment())
-                    modified[neighbor] = neighbor.getDomain()
+
+                    # if neighbor.domain.size() == 1:
+                    #     neighbor.assignValue(neighbor.domain.values[0])                   
+
+                    modified[neighbor] = neighbor.getDomain()   
+
+                    # if neighbor.isModified():
+                    #     modified[neighbor] = neighbor.getDomain()
+
+                    
+
 
         return (modified,self.network.isConsistent())
 
@@ -132,7 +155,25 @@ class BTSolver:
         Return: The unassigned variable with the smallest domain
     """
     def getMRV ( self ):
-        return None
+        
+        unassigned_vars = []
+        for c in self.network.constraints:
+            for v in c.vars:
+                if not v.isAssigned():
+                    unassigned_vars.append(v)
+
+        if len(unassigned_vars) == 0:
+            return None
+        
+        min_remain = unassigned_vars[0].domain.size()
+        smallest_domain = unassigned_vars[0]
+
+        for i in range(1, len(unassigned_vars)):
+            if min_remain > unassigned_vars[i].domain.size():
+                min_remain = unassigned_vars[i].domain.size()
+                smallest_domain = unassigned_vars[i]
+        
+        return smallest_domain
 
     """
         Part 2 TODO: Implement the Minimum Remaining Value Heuristic
@@ -143,7 +184,41 @@ class BTSolver:
                 If there is only one variable, return the list of size 1 containing that variable.
     """
     def MRVwithTieBreaker ( self ):
-        return None
+
+        unassigned_vars = []
+        for c in self.network.constraints:
+            for v in c.vars:
+                if not v.isAssigned():
+                    unassigned_vars.append(v)
+
+        min_remain = unassigned_vars[0].domain.size()
+        smallest_domain_variables = [unassigned_vars[0]]
+
+        for i in range(1, len(unassigned_vars)):
+            if min_remain > unassigned_vars[i].domain.size():
+                smallest_domain_variables = [unassigned_vars[i]]
+                min_remain = unassigned_vars[i].domain.size()
+            elif min_remain == unassigned_vars[i].domain_size():
+                smallest_domain_variables.append(unassigned_vars[i]) 
+
+
+        max_unassigned_neighbors = 0
+        new_small_domain_vars = []
+
+        for small_dom_var in smallest_domain_variables:
+            unassign_count = 0
+            for neighbor in self.network.getNeighborsOfVariable(small_dom_var):
+                if neighbor.isChangeable and not neighbor.isAssigned():
+                    unassign_count += 1
+
+            if unassign_count > max_unassigned_neighbors:
+                max_unassigned_neighbors = unassign_count
+                new_small_domain_vars = [small_dom_var]
+
+            elif unassign_count == max_unassigned_neighbors:
+                new_small_domain_vars.append(small_dom_var)
+        
+        return new_small_domain_vars
 
     """
          Optional TODO: Implement your own advanced Variable Heuristic
@@ -173,8 +248,24 @@ class BTSolver:
                 The LCV is first and the MCV is last
     """
     def getValuesLCVOrder ( self, v ):
-        return None
 
+        sorted_domain_dict = {}
+
+        for domain in v.getDomain().values:
+            domain_count = 0
+            for neighbor in self.network.getNeighborsOfVariable(v):
+                # for neighbor_domain in neighbor.getDomain().values:
+                #     if neighbor_domain == domain:
+                #         domain_count += 1
+
+                if neighbor.getDomain().contains(domain):
+                    domain_count += 1
+
+            sorted_domain_dict[domain] = domain_count
+
+        sorted_domain = [t for t, v in sorted(sorted_domain_dict.items(), key=lambda k: k[1])]
+
+        return sorted_domain
     """
          Optional TODO: Implement your own advanced Value Heuristic
 
