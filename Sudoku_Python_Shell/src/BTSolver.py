@@ -104,7 +104,45 @@ class BTSolver:
                 The bool is true if assignment is consistent, false otherwise.
     """
     def norvigCheck ( self ):
-        return ({}, False)
+        #ask about modified dictionary, whether to use the one from FC or a new one
+        #do we check consistency
+
+        modified = {}
+
+        modified_dict, consistency = self.forwardChecking()
+
+        if not consistency:
+            return (modified_dict, consistency)
+
+        counter_array = []
+
+        N = self.gameboard.N
+
+        for i in range(N):
+            counter_array.append(0)
+
+        for c in self.network.constraints:
+            for i in range(N):
+                counter_array[i] = 0
+
+            for l in range(N):
+                for value in c.vars[l].domain.values:
+                    counter_array[value - 1] += 1
+            
+            for j in range(N):
+                if counter_array[j] == 0:
+                    return (modified, False)
+                if counter_array[j] == 1:
+                    for v in c.vars:
+                        if v.size() == 0:
+                            return (modified, False)
+                        
+                        if v.isChangeable and not v.isAssigned() and v.getDomain().contains(j+1):
+                            self.trail.push(v)
+                            v.assignValue(j+1)
+                            modified[v] = j+1
+
+        return (modified, True)
 
     """
          Optional TODO: Implement your own advanced Constraint Propagation
