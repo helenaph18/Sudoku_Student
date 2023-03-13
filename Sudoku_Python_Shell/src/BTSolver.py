@@ -208,14 +208,21 @@ class BTSolver:
                 if not v.isAssigned():
                     unassigned_vars.append(v)
 
-        min_remain = unassigned_vars[0].domain.size()
+        # min_remain = unassigned_vars[0].domain.size()
+        min_remain = unassigned_vars[0].size()
+
         smallest_domain_variables = [unassigned_vars[0]]
 
         for i in range(1, len(unassigned_vars)):
-            if min_remain > unassigned_vars[i].domain.size():
+            # if min_remain > unassigned_vars[i].domain.size():
+            if min_remain > unassigned_vars[i].size():
+
                 smallest_domain_variables = [unassigned_vars[i]]
-                min_remain = unassigned_vars[i].domain.size()
-            elif min_remain == unassigned_vars[i].domain_size():
+                # min_remain = unassigned_vars[i].domain.size()
+                min_remain = unassigned_vars[i].size()
+
+            # elif min_remain == unassigned_vars[i].domain_size():
+            elif min_remain == unassigned_vars[i].size():
                 smallest_domain_variables.append(unassigned_vars[i]) 
 
 
