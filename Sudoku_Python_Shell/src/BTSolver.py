@@ -173,23 +173,39 @@ class BTSolver:
         Return: The unassigned variable with the smallest domain
     """
     def getMRV ( self ):
+        # unassigned_vars = []
+        # for c in self.network.constraints:
+        #     for v in c.vars:
+        #         if not v.isAssigned():
+        #             unassigned_vars.append(v)
+
+        # if len(unassigned_vars) == 0:
+        #     return None
         
-        unassigned_vars = []
+        # min_remain = unassigned_vars[0].domain.size()
+        # smallest_domain = unassigned_vars[0]
+
+        # for i in range(1, len(unassigned_vars)):
+        #     if min_remain > unassigned_vars[i].domain.size():
+        #         min_remain = unassigned_vars[i].domain.size()
+        #         smallest_domain = unassigned_vars[i]
+        
+        # return smallest_domain
+
+        min_remain = None
+        smallest_domain = None
+        
         for c in self.network.constraints:
             for v in c.vars:
                 if not v.isAssigned():
-                    unassigned_vars.append(v)
+                    if not smallest_domain:
+                        min_remain = v.domain.size()
+                        smallest_domain = v
 
-        if len(unassigned_vars) == 0:
-            return None
-        
-        min_remain = unassigned_vars[0].domain.size()
-        smallest_domain = unassigned_vars[0]
-
-        for i in range(1, len(unassigned_vars)):
-            if min_remain > unassigned_vars[i].domain.size():
-                min_remain = unassigned_vars[i].domain.size()
-                smallest_domain = unassigned_vars[i]
+                    else:
+                        if v.domain.size() < min_remain:
+                            smallest_domain = v
+                            min_remain = v.domain.size()
         
         return smallest_domain
 
@@ -202,51 +218,64 @@ class BTSolver:
                 If there is only one variable, return the list of size 1 containing that variable.
     """
     def MRVwithTieBreaker ( self ):
-
-        unassigned_vars = []
+        min_remain = None
+        smallest_domain = []
+        
         for c in self.network.constraints:
             for v in c.vars:
                 if not v.isAssigned():
-                    unassigned_vars.append(v)
+                    if len(smallest_domain) == 0:
+                        min_remain = v.domain.size()
+                        smallest_domain.append(v)
 
-        if(len(unassigned_vars) == 0):
-            print("here\n")
+                    else:
+                        if v.domain.size() < min_remain:
+                            smallest_domain = [v]
+                            min_remain = v.domain.size()
+                        elif v.domain.size() == min_remain:
+                            smallest_domain.append(v)
+        
+        return smallest_domain
+    
+        # unassigned_vars = []
+        # for c in self.network.constraints:
+        #     for v in c.vars:
+        #         if not v.isAssigned():
+        #             unassigned_vars.append(v)
+        
+        # if(len(unassigned_vars) == 0):
+        #     return None
             
         # min_remain = unassigned_vars[0].domain.size()
-        min_remain = unassigned_vars[0].size()
 
-        smallest_domain_variables = [unassigned_vars[0]]
+        # smallest_domain_variables = [unassigned_vars[0]]
 
-        for i in range(1, len(unassigned_vars)):
-            # if min_remain > unassigned_vars[i].domain.size():
-            if min_remain > unassigned_vars[i].size():
+        # for i in range(1, len(unassigned_vars)):
+        #     if min_remain > unassigned_vars[i].domain.size():
+        #         smallest_domain_variables = [unassigned_vars[i]]
+        #         min_remain = unassigned_vars[i].domain.size()
 
-                smallest_domain_variables = [unassigned_vars[i]]
-                # min_remain = unassigned_vars[i].domain.size()
-                min_remain = unassigned_vars[i].size()
-
-            # elif min_remain == unassigned_vars[i].domain_size():
-            elif min_remain == unassigned_vars[i].size():
-                smallest_domain_variables.append(unassigned_vars[i]) 
+        #     elif min_remain == unassigned_vars[i].domain.size():
+        #         smallest_domain_variables.append(unassigned_vars[i]) 
 
 
-        max_unassigned_neighbors = 0
-        new_small_domain_vars = []
+        # max_unassigned_neighbors = 0
+        # new_small_domain_vars = []
 
-        for small_dom_var in smallest_domain_variables:
-            unassign_count = 0
-            for neighbor in self.network.getNeighborsOfVariable(small_dom_var):
-                if neighbor.isChangeable and not neighbor.isAssigned():
-                    unassign_count += 1
+        # for small_dom_var in smallest_domain_variables:
+        #     unassign_count = 0
+        #     for neighbor in self.network.getNeighborsOfVariable(small_dom_var):
+        #         if neighbor.isChangeable and not neighbor.isAssigned():
+        #             unassign_count += 1
 
-            if unassign_count > max_unassigned_neighbors:
-                max_unassigned_neighbors = unassign_count
-                new_small_domain_vars = [small_dom_var]
+        #     if unassign_count > max_unassigned_neighbors:
+        #         max_unassigned_neighbors = unassign_count
+        #         new_small_domain_vars = [small_dom_var]
 
-            elif unassign_count == max_unassigned_neighbors:
-                new_small_domain_vars.append(small_dom_var)
+        #     elif unassign_count == max_unassigned_neighbors:
+        #         new_small_domain_vars.append(small_dom_var)
         
-        return new_small_domain_vars
+        # return new_small_domain_vars
 
     """
          Optional TODO: Implement your own advanced Variable Heuristic
