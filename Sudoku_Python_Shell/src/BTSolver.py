@@ -131,18 +131,19 @@ class BTSolver:
             
             for j in range(N):
                 if counter_array[j] == 0:
-                    return (modified, False)
+                    return (modified_dict, False)
                 if counter_array[j] == 1:
                     for v in c.vars:
                         if v.size() == 0:
-                            return (modified, False)
-                        
+                            return (modified_dict, False)
                         if v.isChangeable and not v.isAssigned() and v.getDomain().contains(j+1):
                             self.trail.push(v)
                             v.assignValue(j+1)
-                            modified[v] = j+1
+                            modified_dict[v] = j+1
+                        
+        self.arcConsistency()
 
-        return (modified, True)
+        return (modified_dict, consistency)
 
     """
          Optional TODO: Implement your own advanced Constraint Propagation
@@ -208,6 +209,9 @@ class BTSolver:
                 if not v.isAssigned():
                     unassigned_vars.append(v)
 
+        if(len(unassigned_vars) == 0):
+            print("here\n")
+            
         # min_remain = unassigned_vars[0].domain.size()
         min_remain = unassigned_vars[0].size()
 
