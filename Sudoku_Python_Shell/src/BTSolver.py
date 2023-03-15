@@ -48,34 +48,73 @@ class BTSolver:
                 The bool is true if assignment is consistent, false otherwise.
     """
     def forwardChecking ( self ):
+        # modified = {}
+
+        # assignedVars = []
+        # for c in self.network.constraints:
+        #     for v in c.vars:
+        #         if v.isAssigned():
+        #             assignedVars.append(v)
+        # while len(assignedVars) != 0:
+        #     av = assignedVars.pop(0)
+        #     for neighbor in self.network.getNeighborsOfVariable(av):
+        #         if neighbor.size() == 0:
+        #             return (modified, False)
+        #         if neighbor.isChangeable and not neighbor.isAssigned() and neighbor.getDomain().contains(av.getAssignment()):
+        #             if neighbor.size() == 1:
+        #                 return (modified, False)
+        #             self.trail.push(neighbor)
+        #             neighbor.removeValueFromDomain(av.getAssignment())
+        #             modified[neighbor] = neighbor.getDomain()
+        #             if neighbor.domain.size() == 1:
+        #                 neighbor.assignValue(neighbor.domain.values[0])
+        #                 assignedVars.append(neighbor)
+
+        # return (modified, True)
+    
         modified = {}
         
-        assignedVars = []
-        for c in self.network.constraints:
-            for v in c.vars:
-                if v.isAssigned():
-                    assignedVars.append(v)
-        for assign in assignedVars:
-            for neighbor in self.network.getNeighborsOfVariable(assign):
-                if neighbor.size() == 0:
-                    return (modified, False)
-                if neighbor.isChangeable and not neighbor.isAssigned() and neighbor.getDomain().contains(assign.getAssignment()):
-
-                    self.trail.push(neighbor)  
-                    neighbor.removeValueFromDomain(assign.getAssignment())
-                    modified[neighbor] = neighbor.getDomain()   
+        for v in self.network.variables:
+            #for v in c.vars:
+            if v.isAssigned():
+                for neighbor in self.network.getNeighborsOfVariable(v):
+                    if neighbor.size() == 0:
+                        return (modified, False)
+                    if neighbor.isChangeable and not neighbor.isAssigned() and neighbor.getDomain().contains(v.getAssignment()):
+                        self.trail.push(neighbor)  
+                        neighbor.removeValueFromDomain(v.getAssignment())
+                        modified[neighbor] = neighbor.getDomain()  
 
         return (modified,True)
+    
+        # modified = {}
+        
+        # assignedVars = []
+        # for c in self.network.constraints:
+        #     for v in c.vars:
+        #         if v.isAssigned():
+        #             assignedVars.append(v)
+        # for assign in assignedVars:
+        #     for neighbor in self.network.getNeighborsOfVariable(assign):
+        #         if neighbor.size() == 0:
+        #             return (modified, False)
+        #         if neighbor.isChangeable and not neighbor.isAssigned() and neighbor.getDomain().contains(assign.getAssignment()):
+
+        #             self.trail.push(neighbor)  
+        #             neighbor.removeValueFromDomain(assign.getAssignment())
+        #             modified[neighbor] = neighbor.getDomain()   
+
+        # return (modified,True)
 
     # =================================================================
 	# Arc Consistency
 	# =================================================================
     def arcConsistency( self ):
         assignedVars = []
-        for c in self.network.constraints:
-            for v in c.vars:
-                if v.isAssigned():
-                    assignedVars.append(v)
+        for v in self.network.variables:
+            # for v in c.vars:
+            if v.isAssigned():
+                assignedVars.append(v)
         while len(assignedVars) != 0:
             av = assignedVars.pop(0)
             for neighbor in self.network.getNeighborsOfVariable(av):
@@ -107,12 +146,7 @@ class BTSolver:
         #ask about modified dictionary, whether to use the one from FC or a new one
         #do we check consistency
 
-        modified = {}
-
         modified_dict, consistency = self.forwardChecking()
-
-        if not consistency:
-            return (modified_dict, consistency)
 
         counter_array = []
 
@@ -139,11 +173,12 @@ class BTSolver:
                         if v.isChangeable and not v.isAssigned() and v.getDomain().contains(j+1):
                             self.trail.push(v)
                             v.assignValue(j+1)
+                            # print("Row: {}, Col: {}, Value: {}, Depth: {}".format(v.row, v.col, j+1, v))
                             modified_dict[v] = j+1
                         
         self.arcConsistency()
 
-        return (modified_dict, consistency)
+        return (modified_dict, True)
 
     """
          Optional TODO: Implement your own advanced Constraint Propagation
@@ -173,6 +208,24 @@ class BTSolver:
         Return: The unassigned variable with the smallest domain
     """
     def getMRV ( self ):
+        min_remain = None
+        smallest_domain = None
+        
+        for v in self.network.variables:
+            # for v in c.vars:
+                if not v.isAssigned():
+                    domain_size = v.size()
+                    if not smallest_domain:
+                        min_remain = domain_size
+                        smallest_domain = v
+
+                    else:
+                        if domain_size < min_remain:
+                            smallest_domain = v
+                            min_remain = domain_size
+        
+        return smallest_domain
+    
         # unassigned_vars = []
         # for c in self.network.constraints:
         #     for v in c.vars:
@@ -192,23 +245,6 @@ class BTSolver:
         
         # return smallest_domain
 
-        min_remain = None
-        smallest_domain = None
-        
-        for c in self.network.constraints:
-            for v in c.vars:
-                if not v.isAssigned():
-                    if not smallest_domain:
-                        min_remain = v.domain.size()
-                        smallest_domain = v
-
-                    else:
-                        if v.domain.size() < min_remain:
-                            smallest_domain = v
-                            min_remain = v.domain.size()
-        
-        return smallest_domain
-
     """
         Part 2 TODO: Implement the Minimum Remaining Value Heuristic
                        with Degree Heuristic as a Tie Breaker
@@ -219,24 +255,45 @@ class BTSolver:
     """
     def MRVwithTieBreaker ( self ):
         min_remain = None
-        smallest_domain = []
+        smallest_domain_variables = []
         
-        for c in self.network.constraints:
-            for v in c.vars:
-                if not v.isAssigned():
-                    if len(smallest_domain) == 0:
-                        min_remain = v.domain.size()
-                        smallest_domain.append(v)
+        for v in self.network.variables:
+            # for v in c.vars:
+            if not v.isAssigned():
+                domain_size = v.size()
 
-                    else:
-                        if v.domain.size() < min_remain:
-                            smallest_domain = [v]
-                            min_remain = v.domain.size()
-                        elif v.domain.size() == min_remain:
-                            smallest_domain.append(v)
+                if not min_remain:
+                    min_remain = domain_size
+                    smallest_domain_variables.append(v)
+
+                else:
+                    if domain_size < min_remain:
+                        smallest_domain_variables = [v]
+                        min_remain = domain_size
+                    elif domain_size == min_remain:
+                        smallest_domain_variables.append(v)
+
+        if len(smallest_domain_variables) == 0:
+            return [None]
         
-        return smallest_domain
-    
+        max_unassigned_neighbors = 0
+        new_small_domain_vars = []
+
+        for small_dom_var in smallest_domain_variables:
+            unassign_count = 0
+            for neighbor in self.network.getNeighborsOfVariable(small_dom_var):
+                if neighbor.isChangeable and not neighbor.isAssigned():
+                    unassign_count += 1
+
+            if unassign_count > max_unassigned_neighbors:
+                max_unassigned_neighbors = unassign_count
+                new_small_domain_vars = [small_dom_var]
+
+            elif unassign_count == max_unassigned_neighbors:
+                new_small_domain_vars.append(small_dom_var)
+        
+        return new_small_domain_vars
+        
         # unassigned_vars = []
         # for c in self.network.constraints:
         #     for v in c.vars:
