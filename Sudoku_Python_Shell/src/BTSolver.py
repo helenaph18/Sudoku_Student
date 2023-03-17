@@ -149,6 +149,7 @@ class BTSolver:
         modified_dict, consistency = self.forwardChecking()
 
         counter_array = []
+        assignedVars = []
 
         N = self.gameboard.N
 
@@ -173,10 +174,21 @@ class BTSolver:
                         if v.isChangeable and not v.isAssigned() and v.getDomain().contains(j+1):
                             self.trail.push(v)
                             v.assignValue(j+1)
+                            assignedVars.append(v)
                             # print("Row: {}, Col: {}, Value: {}, Depth: {}".format(v.row, v.col, j+1, v))
                             modified_dict[v] = j+1
                         
-        self.arcConsistency()
+        # self.arcConsistency()
+
+
+        while len(assignedVars) != 0:
+            av = assignedVars.pop(0)
+            for neighbor in self.network.getNeighborsOfVariable(av):
+                if not neighbor.isAssigned() and neighbor.getDomain().contains(av.getAssignment()):
+                    neighbor.removeValueFromDomain(av.getAssignment())
+                    if neighbor.domain.size() == 1:
+                        neighbor.assignValue(neighbor.domain.values[0])
+                        assignedVars.append(neighbor)
 
         return (modified_dict, True)
 
